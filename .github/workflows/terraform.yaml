@@ -1,0 +1,80 @@
+name: Terraform - CI
+'on': push
+env:
+  TF_VERSION: 1.3.8
+  AWS_DEFAULT_REGION: us-west-2
+  AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+  AWS_SECRET_ACCESS_KEY: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+  PREV_SHA: "${{ github.event.before }}"
+  SHA: "${{ github.sha }}"
+
+jobs:
+  check_changes:
+    name: check_changes
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Set branch name
+      uses: nelonoel/branch-name@v1.0.1
+    - name: check_changes_lw_pssandbox_cgutierrez_build
+      id: check_changes_lw_pssandbox_cgutierrez_build
+      run: |
+        . ./bin/check_changes.sh lw-pssandbox-cgutierrez build
+        echo "$CHANGED"
+        echo "::set-output name=LW_PSSANDBOX_CGUTIERREZ_BUILD::$CHANGED"
+      shell: bash
+    - name: check_changes_lw_pssandbox_cgutierrez_network
+      id: check_changes_lw_pssandbox_cgutierrez_network
+      run: |
+        . ./bin/check_changes.sh lw-pssandbox-cgutierrez network
+        echo "$CHANGED"
+        echo "::set-output name=LW_PSSANDBOX_CGUTIERREZ_NETWORK::$CHANGED"
+      shell: bash
+    outputs:
+      LW_PSSANDBOX_CGUTIERREZ_BUILD: "${{ steps.check_changes_lw_pssandbox_cgutierrez_build.outputs.LW_PSSANDBOX_CGUTIERREZ_BUILD}}"
+      LW_PSSANDBOX_CGUTIERREZ_NETWORK: "${{ steps.check_changes_lw_pssandbox_cgutierrez_network.outputs.LW_PSSANDBOX_CGUTIERREZ_NETWORK}}"
+
+  lw_pssandbox_cgutierrez_build:
+    if: needs.check_changes.outputs.LW_PSSANDBOX_CGUTIERREZ_BUILD == 'true'
+    runs-on: ubuntu-latest
+    name: lw_pssandbox_cgutierrez_build
+    needs:
+    - check_changes
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Set branch name
+      uses: nelonoel/branch-name@v1.0.1
+    - name: Set up tfswitch
+      run: |
+        curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | sudo bash
+        tfswitch $TF_VERSION
+    - name: lw_pssandbox_cgutierrez_build
+      run: ./bin/deploy.sh lw-pssandbox-cgutierrez build
+      shell: bash
+
+  lw_pssandbox_cgutierrez_network:
+    if: needs.check_changes.outputs.LW_PSSANDBOX_CGUTIERREZ_NETWORK == 'true'
+    runs-on: ubuntu-latest
+    name: lw_pssandbox_cgutierrez_network
+    needs:
+    - check_changes
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Set branch name
+      uses: nelonoel/branch-name@v1.0.1
+    - name: Set up tfswitch
+      run: | 
+        curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | sudo bash
+        tfswitch $TF_VERSION
+    - name: lw_pssandbox_cgutierrez_network
+      run: ./bin/deploy.sh lw-pssandbox-cgutierrez network
+      shell: bash
