@@ -20,28 +20,28 @@ jobs:
         fetch-depth: 0
     - name: Set branch name
       uses: nelonoel/branch-name@v1.0.1
-    - name: check_changes_lw_pssandbox_cgutierrez_build
-      id: check_changes_lw_pssandbox_cgutierrez_build
+    - name: check_changes_account_layer1
+      id: check_changes_account_layer1
       run: |
-        . ./bin/check_changes.sh lw-pssandbox-cgutierrez build
+        . ./bin/check_changes.sh account layer1
         echo "$CHANGED"
-        echo "LW_PSSANDBOX_CGUTIERREZ_BUILD=$CHANGED" >> $GITHUB_OUTPUT
+        echo "ACCOUNT_LAYER1=$CHANGED" >> $GITHUB_OUTPUT
       shell: bash
-    - name: check_changes_lw_pssandbox_cgutierrez_network
-      id: check_changes_lw_pssandbox_cgutierrez_network
+    - name: check_changes_account_layer2
+      id: check_changes_account_layer2
       run: |
-        . ./bin/check_changes.sh lw-pssandbox-cgutierrez network
+        . ./bin/check_changes.sh account layer2
         echo "$CHANGED"
-        echo "LW_PSSANDBOX_CGUTIERREZ_NETWORK=$CHANGED" >> $GITHUB_OUTPUT
+        echo "ACCOUNT_LAYER2=$CHANGED" >> $GITHUB_OUTPUT
       shell: bash
     outputs:
-      LW_PSSANDBOX_CGUTIERREZ_BUILD: "${{ steps.check_changes_lw_pssandbox_cgutierrez_build.outputs.LW_PSSANDBOX_CGUTIERREZ_BUILD}}"
-      LW_PSSANDBOX_CGUTIERREZ_NETWORK: "${{ steps.check_changes_lw_pssandbox_cgutierrez_network.outputs.LW_PSSANDBOX_CGUTIERREZ_NETWORK}}"
+      ACCOUNT_LAYER1: "${{ steps.check_changes_account_layer1.outputs.ACCOUNT_LAYER1}}"
+      ACCOUNT_LAYER2: "${{ steps.check_changes_account_layer2.outputs.ACCOUNT_LAYER2}}"
 
-  lw_pssandbox_cgutierrez_build:
-    if: needs.check_changes.outputs.LW_PSSANDBOX_CGUTIERREZ_BUILD == 'true'
+  account_layer1:
+    if: needs.check_changes.outputs.ACCOUNT_LAYER1 == 'true'
     runs-on: ubuntu-latest
-    name: lw_pssandbox_cgutierrez_build
+    name: account_layer1
     needs:
     - check_changes
     steps:
@@ -55,14 +55,14 @@ jobs:
       run: |
         curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | sudo bash
         tfswitch $TF_VERSION
-    - name: lw_pssandbox_cgutierrez_build
-      run: ./bin/deploy.sh lw-pssandbox-cgutierrez build
+    - name: account_layer1
+      run: ./bin/deploy.sh account layer1
       shell: bash
 
-  lw_pssandbox_cgutierrez_network:
-    if: needs.check_changes.outputs.LW_PSSANDBOX_CGUTIERREZ_NETWORK == 'true'
+  account_layer2:
+    if: needs.check_changes.outputs.ACCOUNT_LAYER2 == 'true'
     runs-on: ubuntu-latest
-    name: lw_pssandbox_cgutierrez_network
+    name: account_layer2
     needs:
     - check_changes
     steps:
@@ -76,6 +76,6 @@ jobs:
       run: | 
         curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | sudo bash
         tfswitch $TF_VERSION
-    - name: lw_pssandbox_cgutierrez_network
-      run: ./bin/deploy.sh lw-pssandbox-cgutierrez network
+    - name: account_layer2
+      run: ./bin/deploy.sh account layer2
       shell: bash
