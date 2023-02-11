@@ -1,18 +1,22 @@
 # terraform-gha
 
-A GitHub Actions Terraform CI/CD solution.
-
 ## Overview
 
-This code sets up a CICD pipeline leveraging GitHub Actions allowing you to deploy to multiple accounts/environments and layers.
+The repository contains a Github Actions workflow file, located in the .github/workflows directory. This workflow is triggered on push events to the main branch and on pull request events. The workflow uses the two scripts mentioned below, check_changes.sh and deploy.sh, to check if changes were made to the live environment and layer and deploy the changes if necessary.
 
-- In the .github/workflows directory you will see the terraform.yaml workflow file. This is how the GitHub Action works.
+The workflow sets the environment variables ENV and LAYER based on the contents of the pull request or push event. If changes were made, the workflow runs the deploy.sh script to deploy the changes. If the current branch is not "main", the workflow will only run a Terraform plan and will not apply the changes.
 
-- In the bin directory you will see two scripts. This is the logic that works alongside the terraform.yaml workflow file that enables a terraform plan on feature branches and a terraform apply when merging into the main branch. 
+## Scripts
 
 `check_changes.sh`
 
-This is a bash script that performs the following actions:
+This script checks if changes were made to the specified environment and layer in the live directory. It takes two arguments, the environment name and the layer name. The script outputs a list of changes and sets the CHANGED environment variable to either true or false.
+
+```
+./check_changes.sh <ENV> <LAYER>
+```
+
+This bash script performs the following actions:
 1. It sets the exit code of the script to be non-zero if any command returns a non-zero value using the command set -e.
 2. It takes two command-line arguments, $1 and $2, and assigns them to the variables ENV and LAYER respectively.
 3. It checks the value of the BRANCH_NAME environment variable. If it is equal to "main", then it performs a git diff between the previous SHA and the current SHA using git diff --name-only --diff-filter=d "$PREV_SHA" "$SHA", and assigns the output to the variable DIFF.
@@ -23,7 +27,13 @@ This is a bash script that performs the following actions:
 
 `deploy.sh`
 
-This is a bash script that performs the following actions:
+This script deploys the Terraform code to the specified environment and layer. It takes two arguments, the environment name and the layer name. If the current branch is "main", the script will automatically apply the changes. Otherwise, it will only run a Terraform plan.
+
+```
+./deploy.sh <ENV> <LAYER>
+```
+
+This bash script performs the following actions:
 1. It sets the exit code of the script to be non-zero if any command returns a non-zero value using the command set -e.
 2. It takes two command-line arguments, $1 and $2, and assigns them to the variables ENV and LAYER respectively.
 3. The script uses the cd command to change the current working directory to live/${ENV}/${LAYER}.
