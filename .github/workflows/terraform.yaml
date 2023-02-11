@@ -7,6 +7,7 @@ env:
   AWS_SECRET_ACCESS_KEY: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
   PREV_SHA: "${{ github.event.before }}"
   SHA: "${{ github.sha }}"
+  GIT_SSH_COMMAND: "echo '${{ secrets.SSH_KEY }}' > id_rsa && ssh-keyscan github.com > known_hosts && chmod 600 id_rsa known_hosts && ssh -i ./id_rsa -o UserKnownHostsFile=./known_hosts"
 
 jobs:
   check_changes:
