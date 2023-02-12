@@ -1,4 +1,4 @@
-# terraform-gha
+# terraform-github-actions
 
 ## Overview
 
